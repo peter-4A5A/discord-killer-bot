@@ -1,6 +1,22 @@
 version: '2.0'
 services:
   app:
-    build: killerbot:latest
+    image: 10.10.0.1:5000/killerbot:master
+    restart: always
     environment:
-      - DISCORD_KEY=leuk
+      - DISCORD_KEY=
+      - MYSQL_DATABASE=
+      - MYSQL_USER=
+      - MYSQL_PASSWORD=
+  db:
+    image: mariadb:latest
+    restart: always
+    environment:
+    - MYSQL_ROOT_PASSWORD=
+    - MYSQL_DATABASE=
+    - MYSQL_USER=
+    - MYSQL_PASSWORD=
+    networks:
+      - backend
+    volumes:
+    - "killerbot.database:/var/lib/mysql"
