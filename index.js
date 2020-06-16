@@ -57,8 +57,14 @@ const database = new Database(config.db);
         }
         message.reply('Added ' + usernames);
       }
+      else if (command == 'help') {
+        message.reply(`
+          - .killer list -> Display list of all times someone was killed
+          - .killer add -> Add a user to the kill list
+        `);
+      }
       else {
-        message.reply('Command not found');
+        message.reply('Command not found, type list');
       }
     }
   });
