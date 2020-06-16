@@ -1,9 +1,11 @@
 const Discord = require('discord.js');
-const Database = require("./database");
+const { Database } = require("./database");
 
 const config = require("./config");
 const client = new Discord.Client();
+
 const database = new Database(config.db);
+// https://discord.com/api/oauth2/authorize?client_id=722454127887515649&permissions=206912&scope=bot
 
 (async() => {
   let tableExists = await database.tableExists('history');
@@ -15,11 +17,12 @@ const database = new Database(config.db);
     console.log("Ready to do this");
   });
 
-  client.on('message', (message) => {
+  client.on('message', async (message) => {
+    let content = message.content;
     if (message.content.startsWith(config.bot.prefix)) {
       // Handle action
 
-      let command = getCommand(message);
+      let command = getCommand(content);
       if (command == false) {
         message.reply('No valid command');
       }
@@ -29,8 +32,9 @@ const database = new Database(config.db);
         let timesKilled = {};
         for (let i = 0; i < users.length; i++) {
           let user = users[i];
-          let kills = await database.execute("SELECT COUNT(*) as times_killed FROM history WHERE name = ?");
-          timesKilled[user] = kills;
+          let username = user.name;
+          let kills = await database.execute("SELECT COUNT(*) as times_killed FROM history WHERE name = ?", [username]);
+          timesKilled[username] = kills[0].times_killed;
         }
 
         let returningMessage = "";
@@ -41,14 +45,17 @@ const database = new Database(config.db);
         message.reply(returningMessage);
       }
       else if (command == 'add') {
+        let usernames = '';
         let users = message.mentions.users;
-        for (let i = 0; i < users.length; i++) {
-          let user = users[i];
+        for (let userObject of users) {
+          let user = userObject[1];
+          let username = user.username;
           database.execute("INSERT INTO history (name) VALUES (?)", [
-            user
+            username
           ]);
-          message.reply('Added ' + user);
+          usernames += ' ' + username;
         }
+        message.reply('Added ' + usernames);
       }
       else {
         message.reply('Command not found');
