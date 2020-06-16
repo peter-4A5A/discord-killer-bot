@@ -16,8 +16,8 @@ class Database {
 
   tableExists(name) {
     return new Promise(resolve => {
-      this.connection.execute("SHOW TABLES LIKE ?", [name], (err, res) => {
-        resolve(res !== null);
+      this.connection.execute("SHOW TABLES LIKE '?'", [name], (err, res) => {
+        resolve(res == null);
       });
     });
   }
