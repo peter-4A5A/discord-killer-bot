@@ -70,7 +70,7 @@ const database = new Database(config.db);
   });
 
 
-  client.login(config.discord.key);
+  client.login(process.env.DISCORD_KEY ? process.env.DISCORD_KEY : config.discord.key);
 })();
 
 
