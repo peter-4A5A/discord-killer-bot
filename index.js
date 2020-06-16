@@ -15,6 +15,7 @@ const database = new Database(config.db);
 
   client.on('ready', () => {
     console.log("Ready to do this");
+    client.user.setActivity('Type .killer');
   });
 
   client.on('message', async (message) => {
