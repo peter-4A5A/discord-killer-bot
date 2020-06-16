@@ -1,0 +1,28 @@
+{
+  "name": "discord-killer-bot",
+  "version": "1.0.0",
+  "description": "A bot to display the kill stats",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peter-4A5A/discord-killer-bot.git"
+  },
+  "keywords": [
+    "Discord",
+    "killer",
+    "bot"
+  ],
+  "author": "Peter Romijn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/peter-4A5A/discord-killer-bot/issues"
+  },
+  "homepage": "https://github.com/peter-4A5A/discord-killer-bot#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "mysql2": "^2.1.0"
+  }
+}
