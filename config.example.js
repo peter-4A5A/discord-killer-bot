@@ -6,7 +6,7 @@ module.exports = {
     prefix: '.killer',
   },
   db: {
-    host: ,
+    host: 'db',
     user: process.env.MYSQL_DATABASE,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
