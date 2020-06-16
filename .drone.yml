@@ -1,0 +1,12 @@
+pipeline:
+  master:
+    image: plugins/docker
+    registry: 10.10.0.1:5000
+    repo: 10.10.0.1:5000/killerbot
+    insecure: true
+    tag: [ master ]
+    when:
+      branch: master
+      event: push
+    cache_from:
+    - "10.10.0.1:5000/killerbot:master"
