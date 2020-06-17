@@ -1,7 +1,9 @@
 const Discord = require('discord.js');
-const { Database } = require("./database");
 
+const { Database } = require("./database");
 const config = require("./config");
+const { TeamKill } = require("./teamkill");
+
 const client = new Discord.Client();
 
 const database = new Database(config.db);
@@ -19,6 +21,7 @@ const database = new Database(config.db);
   });
 
   client.on('message', async (message) => {
+    let teamkill = new TeamKill(database, message.guild.id);
     let content = message.content;
     if (message.content.startsWith(config.bot.prefix)) {
       // Handle action
@@ -29,37 +32,35 @@ const database = new Database(config.db);
       }
 
       if (command == 'list') {
-        message.reply(await getKilledMessage());
+        let kills = await teamkill.getCountedKills();
+        message.reply(await getKilledMessage(kills));
       }
       else if (command == 'add') {
         let usernames = '';
         let users = message.mentions.users;
+        if (users.first() == undefined) {
+          message.reply("Missing username");
+          return;
+        }
         for (let userObject of users) {
           let user = userObject[1];
           let username = user.username;
-          database.execute("INSERT INTO history (name) VALUES (?)", [
-            username
-          ]);
+          teamkill.addKill(username);
           usernames += ' ' + username;
         }
         message.reply('Added ' + usernames);
-        let serverId = message.guild.id;
-        let serverSettings = await database.execute("SELECT * FROM server_settings WHERE server=?", [serverId]);
-        if (serverSettings.length > 0) {
+        let settings = await teamkill.getServerSettings();
+        if (settings) {
           // Send the edit the message
-          serverSettings = serverSettings[0];
-          await syncKilled(serverSettings);
+          await syncKilled(teamkill, settings);
         }
       }
       else if (command == 'details') {
         let username = message.mentions.users.first().username;
-        let kills = await database.execute("SELECT * FROM history WHERE name = ?", [username]);
-        let returningMessage = 'Kills from ' + username + ' \n';
+        let kills = teamkill.getKillsOfUser(username);
+        let returningMessage = '';
         for (let i = 0; i < kills.length; i++) {
-          let kill = kills[i];
-          let killDate = new Date(kill.created_at);
-          let killDateString = (killDate.getDay() + 1) + "-" + killDate.getDate() + '-' + killDate.getFullYear();
-          returningMessage += 'One kill happend on: ' + killDateString + ' \n';
+          returningMessage += 'One kill happend on: ' + kills[i] + ' \n';
         }
         message.reply(returningMessage);
       }
@@ -81,12 +82,14 @@ const database = new Database(config.db);
       }
       else if (command == 'sync') {
         let serverId = message.guild.id;
-        let serverSettings = await database.execute("SELECT * FROM server_settings WHERE server=?", [serverId]);
-        if (serverSettings.length > 0) {
+        let serverSettings = await teamkill.getServerSettings();
+        if (serverSettings) {
           // Send the edit the message
-          serverSettings = serverSettings[0];
-          await syncKilled(serverSettings);
+          await syncKilled(teamkill, serverSettings);
         }
+      }
+      else if (command == 'share') {
+        message.reply("You can add me with the following link: https://discord.com/api/oauth2/authorize?client_id=722454127887515649&permissions=206912&scope=bot");
       }
       else if (command == 'help') {
         message.reply(`
@@ -94,6 +97,7 @@ const database = new Database(config.db);
           - .killer add -> Add a user to the kill list
           - .killer details USER -> Details of when a user killed someone
           - .killer bind CHANNEL -> Binds bots to a channel and a message
+          - .killer share -> Gives you the link to deploy the script on your own discord server
         `);
       }
       else {
@@ -106,39 +110,18 @@ const database = new Database(config.db);
   client.login(process.env.DISCORD_KEY ? process.env.DISCORD_KEY : config.discord.key);
 })();
 
-async function syncKilled(serverSettings) {
+async function syncKilled(teamkill, serverSettings) {
   let channel = await client.channels.fetch(serverSettings.bind_channel);
   let bindMessage = await channel.messages.fetch(serverSettings.message_id);
-  bindMessage.edit(await getKilledMessage());
+  let kills = await teamkill.getCountedKills();
+  bindMessage.edit(await getKilledMessage(kills));
 }
 
 
-async function getKilledMessage() {
-  let users = await database.execute("SELECT DISTINCT name FROM history", []);
-  let timesKilled = {};
-  for (let i = 0; i < users.length; i++) {
-    let user = users[i];
-    let username = user.name;
-    let kills = await database.execute("SELECT COUNT(*) as times_killed FROM history WHERE name = ?", [username]);
-    timesKilled[username] = kills[0].times_killed;
-  }
-
-  var sortable = [];
-  for (let kill in timesKilled) {
-      sortable.push([kill, timesKilled[kill]]);
-  }
-
-  sortable.sort(function(a, b) {
-      return b[1] - a[1];
-  });
-  let sorted = {};
-  sortable.forEach(function(item){
-    sorted[item[0]]=item[1]
-  });
-
+async function getKilledMessage(kills) {
   let returningMessage = "";
-  for (var name in sorted) {
-    returningMessage = returningMessage + " " + name + " killed a team member: " + sorted[name] + ' times \n';
+  for (let name in kills) {
+    returningMessage = returningMessage + " " + name + " killed a team member: " + kills[name] + ' times \n';
   }
   return returningMessage;
 }
