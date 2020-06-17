@@ -59,14 +59,14 @@ const database = new Database(config.db);
         message.reply('Added ' + usernames);
       }
       else if (command == 'details') {
-        let username = message.mentions.users[0];
+        let username = message.mentions.users.first().username;
         let kills = await database.execute("SELECT * FROM history WHERE name = ?", [username]);
         let returningMessage = 'Kills from ' + username + ' \n';
         for (let i = 0; i < kills.length; i++) {
           let kill = kills[i];
           let killDate = new Date(kill.created_at);
-          killDate = killDate.toLocalDateString('nl-NL');
-          returningMessage += 'One kill happend on: ' + killDate + ' \n';
+          let killDateString = (killDate.getDay() + 1) + "-" + killDate.getDate() + '-' + killDate.getFullYear();
+          returningMessage += 'One kill happend on: ' + killDateString + ' \n';
         }
         message.reply(returningMessage);
       }
