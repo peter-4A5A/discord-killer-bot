@@ -29,21 +29,7 @@ const database = new Database(config.db);
       }
 
       if (command == 'list') {
-        let users = await database.execute("SELECT DISTINCT name FROM history", []);
-        let timesKilled = {};
-        for (let i = 0; i < users.length; i++) {
-          let user = users[i];
-          let username = user.name;
-          let kills = await database.execute("SELECT COUNT(*) as times_killed FROM history WHERE name = ?", [username]);
-          timesKilled[username] = kills[0].times_killed;
-        }
-
-        let returningMessage = "";
-        for (var name in timesKilled) {
-          returningMessage = returningMessage + " " + name + " killed a team member: " + timesKilled[name] + ' times \n';
-        }
-
-        message.reply(returningMessage);
+        message.reply(await getKilledMessage());
       }
       else if (command == 'add') {
         let usernames = '';
@@ -57,6 +43,15 @@ const database = new Database(config.db);
           usernames += ' ' + username;
         }
         message.reply('Added ' + usernames);
+
+        let serverSettings = await database.execute("SELECT * FROM server_settings WHERE server=?", ["722454018764308559"]);
+        if (serverSettings.length > 0) {
+          // Send the edit the message
+          serverSettings = serverSettings[0];
+          let channel = await client.channels.fetch(serverSettings.bind_channel);
+          let bindMessage = await channel.messages.fetch(serverSettings.message_id);
+          bindMessage.edit(await getKilledMessage());
+        }
       }
       else if (command == 'details') {
         let username = message.mentions.users.first().username;
@@ -70,10 +65,28 @@ const database = new Database(config.db);
         }
         message.reply(returningMessage);
       }
+      else if (command == 'bind') {
+        console.log("bericht");
+        let channel = message.mentions.channels.first();
+        let channelId = channel.id;
+        let server = message.guild;
+        let serverId = server.id;
+        if (await database.execute("SELECT * FROM server_settings WHERE server=?", [serverId]).length > 0) {
+          // Update
+          await database.execute("UPDATE server_settings SET bind_channel=? WHERE server=?", [channelId, serverId]);
+        }
+        else {
+          // Insert
+          await database.execute("INSERT INTO server_settings (server, bind_channel) VALUES (?, ?)", [serverId, channelId]);
+        }
+        let sendedMessage = await channel.send('Binded to this channel and message');
+        await database.execute('UPDATE server_settings SET message_id=? WHERE server=?', [sendedMessage.id, serverId]);
+      }
       else if (command == 'help') {
         message.reply(`
           - .killer list -> Display list of all times someone was killed
           - .killer add -> Add a user to the kill list
+          - .killer details USER -> Details of when a user killed someone
         `);
       }
       else {
@@ -87,7 +100,22 @@ const database = new Database(config.db);
 })();
 
 
+async function getKilledMessage() {
+  let users = await database.execute("SELECT DISTINCT name FROM history", []);
+  let timesKilled = {};
+  for (let i = 0; i < users.length; i++) {
+    let user = users[i];
+    let username = user.name;
+    let kills = await database.execute("SELECT COUNT(*) as times_killed FROM history WHERE name = ?", [username]);
+    timesKilled[username] = kills[0].times_killed;
+  }
 
+  let returningMessage = "";
+  for (var name in timesKilled) {
+    returningMessage = returningMessage + " " + name + " killed a team member: " + timesKilled[name] + ' times \n';
+  }
+  return returningMessage;
+}
 
 function getCommand(message) {
   let words = message.split(" ");
