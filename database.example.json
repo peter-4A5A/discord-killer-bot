@@ -1,7 +1,7 @@
 {
   "dev": {
     "driver": "mysql",
-    "host": "localhost",
+    "host": "db",
     "port": "3306",
     "user": {"ENV": "MYSQL_USER"},
     "password": {"ENV": "MYSQL_PASSWORD"},
