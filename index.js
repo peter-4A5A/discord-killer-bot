@@ -48,9 +48,7 @@ const database = new Database(config.db);
         if (serverSettings.length > 0) {
           // Send the edit the message
           serverSettings = serverSettings[0];
-          let channel = await client.channels.fetch(serverSettings.bind_channel);
-          let bindMessage = await channel.messages.fetch(serverSettings.message_id);
-          bindMessage.edit(await getKilledMessage());
+          await syncKilled(serverSettings);
         }
       }
       else if (command == 'details') {
@@ -66,7 +64,6 @@ const database = new Database(config.db);
         message.reply(returningMessage);
       }
       else if (command == 'bind') {
-        console.log("bericht");
         let channel = message.mentions.channels.first();
         let channelId = channel.id;
         let server = message.guild;
@@ -82,11 +79,21 @@ const database = new Database(config.db);
         let sendedMessage = await channel.send('Binded to this channel and message');
         await database.execute('UPDATE server_settings SET message_id=? WHERE server=?', [sendedMessage.id, serverId]);
       }
+      else if (command == 'sync') {
+        let serverId = message.guild.id;
+        let serverSettings = await database.execute("SELECT * FROM server_settings WHERE server=?", [serverId]);
+        if (serverSettings.length > 0) {
+          // Send the edit the message
+          serverSettings = serverSettings[0];
+          await syncKilled(serverSettings);
+        }
+      }
       else if (command == 'help') {
         message.reply(`
           - .killer list -> Display list of all times someone was killed
           - .killer add -> Add a user to the kill list
           - .killer details USER -> Details of when a user killed someone
+          - .killer bind CHANNEL -> Binds bots to a channel and a message
         `);
       }
       else {
@@ -98,6 +105,12 @@ const database = new Database(config.db);
 
   client.login(process.env.DISCORD_KEY ? process.env.DISCORD_KEY : config.discord.key);
 })();
+
+async function syncKilled(serverSettings) {
+  let channel = await client.channels.fetch(serverSettings.bind_channel);
+  let bindMessage = await channel.messages.fetch(serverSettings.message_id);
+  bindMessage.edit(await getKilledMessage());
+}
 
 
 async function getKilledMessage() {
