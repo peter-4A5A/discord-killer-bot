@@ -43,8 +43,8 @@ const database = new Database(config.db);
           usernames += ' ' + username;
         }
         message.reply('Added ' + usernames);
-
-        let serverSettings = await database.execute("SELECT * FROM server_settings WHERE server=?", ["722454018764308559"]);
+        let serverId = message.guild.id;
+        let serverSettings = await database.execute("SELECT * FROM server_settings WHERE server=?", [serverId]);
         if (serverSettings.length > 0) {
           // Send the edit the message
           serverSettings = serverSettings[0];
