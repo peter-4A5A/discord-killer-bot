@@ -110,9 +110,22 @@ async function getKilledMessage() {
     timesKilled[username] = kills[0].times_killed;
   }
 
+  var sortable = [];
+  for (let kill in timesKilled) {
+      sortable.push([kill, timesKilled[kill]]);
+  }
+
+  sortable.sort(function(a, b) {
+      return b[1] - a[1];
+  });
+  let sorted = {};
+  sortable.forEach(function(item){
+    sorted[item[0]]=item[1]
+  });
+
   let returningMessage = "";
-  for (var name in timesKilled) {
-    returningMessage = returningMessage + " " + name + " killed a team member: " + timesKilled[name] + ' times \n';
+  for (var name in sorted) {
+    returningMessage = returningMessage + " " + name + " killed a team member: " + sorted[name] + ' times \n';
   }
   return returningMessage;
 }
