@@ -62,13 +62,14 @@ const database = new Database(config.db);
           message.reply("Missing username");
           return;
         }
-        teamkill.removeKill(user);
+        let username = user.username;
+        teamkill.removeKill(username);
         let settings = await teamkill.getServerSettings();
         if (settings) {
           // Send the edit the message
           await syncKilled(teamkill, settings);
         }
-        message.reply("Removed " + user);
+        message.reply("Removed " + username);
       }
       else if (command == 'details') {
         let username = message.mentions.users.first().username;
