@@ -58,7 +58,7 @@ class TeamKill {
     for (let i = 0; i < kills.length; i++) {
       let kill = kills[i];
       let killDate = new Date(kill.created_at);
-      let killDateString = (killDate.getDay() + 1) + "-" + killDate.getDate() + '-' + killDate.getFullYear();
+      let killDateString = killDate.getDate() + "-" + (killDate.getMonth() + 1) + '-' + killDate.getFullYear();
       result.push(killDateString);
     }
     return result;
