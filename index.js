@@ -56,6 +56,7 @@ const database = new Database(config.db);
         }
       }
       else if (command == "remove") {
+        let users = message.mentions.users;
         let user = users.first()
         if (user == undefined) {
           message.reply("Missing username");
