@@ -16,7 +16,7 @@ class TeamKill {
     this.database.execute("SELECT id FROM history WHERE server_id=? AND name=?", [
       this.serverId,
       username
-    ]).then(result) {
+    ]).then(result => {
       if (result.length > 0) {
         let historyId = result[0].id;
         this.database.execute("DELETE FROM history WHERE server_id=? AND id=?", [
@@ -24,7 +24,7 @@ class TeamKill {
           historyId,
         ]);
       }
-    }
+    });
   }
 
   async getCountedKills() {
