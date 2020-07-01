@@ -12,6 +12,21 @@ class TeamKill {
     ]);
   }
 
+  removeKill(username) {
+    this.database.execute("SELECT id FROM history WHERE server_id=? AND name=?", [
+      this.serverId,
+      username
+    ]).then(result) {
+      if (result.length > 0) {
+        let historyId = result[0].id;
+        this.database.execute("DELETE FROM history WHERE server_id=? AND id=?", [
+          this.serverId,
+          historyId,
+        ]);
+      }
+    }
+  }
+
   async getCountedKills() {
     let users = await this.database.execute("SELECT DISTINCT name FROM history WHERE server_id=?", [this.serverId]);
     let timesKilled = {};

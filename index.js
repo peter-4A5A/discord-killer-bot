@@ -55,6 +55,20 @@ const database = new Database(config.db);
           await syncKilled(teamkill, settings);
         }
       }
+      else if (command == "remove") {
+        let user = users.first()
+        if (user == undefined) {
+          message.reply("Missing username");
+          return;
+        }
+        teamkill.removeKill(user);
+        let settings = await teamkill.getServerSettings();
+        if (settings) {
+          // Send the edit the message
+          await syncKilled(teamkill, settings);
+        }
+        message.reply("Removed " + user);
+      }
       else if (command == 'details') {
         let username = message.mentions.users.first().username;
         let kills = teamkill.getKillsOfUser(username);
@@ -95,13 +109,14 @@ const database = new Database(config.db);
         message.reply(`
           - .killer list -> Display list of all times someone was killed
           - .killer add -> Add a user to the kill list
+          - .killer remove -> Removes the last kill from a user from the kill list
           - .killer details USER -> Details of when a user killed someone
           - .killer bind CHANNEL -> Binds bots to a channel and a message
           - .killer share -> Gives you the link to deploy the script on your own discord server
         `);
       }
       else {
-        message.reply('Command not found, type list');
+        message.reply('Command not found, type help');
       }
     }
   });
