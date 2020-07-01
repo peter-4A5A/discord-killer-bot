@@ -52,10 +52,9 @@ class TeamKill {
     return sorted;
   }
 
-  async getKillsOfUser(userId) {
+  async getKillsOfUser(username) {
     let result = [];
     let kills = await this.database.execute("SELECT * FROM history WHERE name = ? AND server_id=?", [username, this.serverId]);
-    let returningMessage = 'Kills from ' + username + ' \n';
     for (let i = 0; i < kills.length; i++) {
       let kill = kills[i];
       let killDate = new Date(kill.created_at);

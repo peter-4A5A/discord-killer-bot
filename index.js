@@ -72,8 +72,14 @@ const database = new Database(config.db);
         message.reply("Removed " + username);
       }
       else if (command == 'details') {
-        let username = message.mentions.users.first().username;
-        let kills = teamkill.getKillsOfUser(username);
+        let users = message.mentions.users;
+        let user = users.first()
+        if (user == undefined) {
+          message.reply("Missing username");
+          return;
+        }
+        let username = user.username;
+        let kills = await teamkill.getKillsOfUser(username);
         let returningMessage = '';
         for (let i = 0; i < kills.length; i++) {
           returningMessage += 'One kill happend on: ' + kills[i] + ' \n';
