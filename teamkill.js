@@ -13,7 +13,7 @@ class TeamKill {
   }
 
   removeKill(username) {
-    this.database.execute("SELECT id FROM history WHERE server_id=? AND name=?", [
+    this.database.execute("SELECT id FROM history WHERE server_id=? AND name=? ORDER BY id DESC LIMIT 1", [
       this.serverId,
       username
     ]).then(result => {
